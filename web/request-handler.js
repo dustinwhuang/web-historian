@@ -13,7 +13,16 @@ exports.handleRequest = function (req, res) {
     res.end(fs.readFileSync(archive.paths.archivedSites + req.url));
   } else if (req.method === 'POST') {
     req.on('data', chunk => {
-      fs.appendFileSync(archive.paths.list, chunk.toString().match(/url=(.*)/)[1] + '\n');
+      let url = chunk.toString().match(/url=(.*)/)[1];
+      archive.isUrlInList(url, exists => {
+        if (exists) {
+          http.serveAssets(res, archive.paths.archivedSites + '/' + url);
+        } else {
+          archive.addUrlToList(url, () => {});
+          archive.downloadUrls([url]);
+          http.serveAssets(res, './web/public/loading.html');
+        }
+      });
       res.writeHead(302, headers);
       res.end();
     });
