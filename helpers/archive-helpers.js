@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+const fetch = require('./../workers/htmlfetcher');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -39,8 +40,9 @@ exports.addUrlToList = function(url, callback) {
 };
 
 exports.isUrlArchived = function(url, callback) {
-
+  callback(fs.existsSync(this.paths.archivedSites + '/' + url));
 };
 
 exports.downloadUrls = function(urls) {
+  urls.forEach(url => fetch.downloadPage(url));
 };
