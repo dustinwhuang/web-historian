@@ -26,15 +26,20 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function(callback) {
+  return callback(fs.readFileSync(this.paths.list).toString().split('\n'));
 };
 
 exports.isUrlInList = function(url, callback) {
+  callback(this.readListOfUrls(urls => urls.some(e => e === url)));
 };
 
 exports.addUrlToList = function(url, callback) {
+  fs.appendFileSync(this.paths.list, url + '\n');
+  callback.call(this);
 };
 
 exports.isUrlArchived = function(url, callback) {
+
 };
 
 exports.downloadUrls = function(urls) {
