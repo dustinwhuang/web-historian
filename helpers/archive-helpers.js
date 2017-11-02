@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 const https = require('https');
+const Promise = require('bluebird');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -54,4 +55,25 @@ exports.downloadPage = function(url) {
 
     file.on('finish', () => file.close());
   });
+};
+
+Promise.promisifyAll(fs);
+
+exports.readListOfUrlsAsync = function() {
+  return fs.readFileAsync(this.path.list)
+    .then(buffer => buffer.toString().split('\n'));
+};
+
+exports.isUrlInListAsync = function(url) {
+  return this.readListOfUrlsAsync()
+    .then(urls => urls.some(e => e === url));
+};
+
+exports.addUrlToListAsync = function(url) {
+  return fs.appendFileAsync(this.paths.list, url + '\n');
+};
+
+exports.isUrlArchivedAsync = function(url) {
+  return fs.statAsync(this.paths.archivedSites + '/' + url)
+    .then(stat => stat.isFile());
 };
