@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
-const fetch = require('./../workers/htmlfetcher');
+const https = require('https');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -40,9 +40,18 @@ exports.addUrlToList = function(url, callback) {
 };
 
 exports.isUrlArchived = function(url, callback) {
-  callback(fs.existsSync(this.paths.archivedSites + '/' + url));
+  return callback(fs.existsSync(this.paths.archivedSites + '/' + url));
 };
 
 exports.downloadUrls = function(urls) {
-  urls.forEach(url => fetch.downloadPage(url));
+  urls.forEach(url => this.downloadPage(url));
+};
+
+exports.downloadPage = function(url) {
+  let file = fs.createWriteStream(this.paths.archivedSites + '/' + url);
+  https.get('https://' + url, response => {
+    response.pipe(file);
+
+    file.on('finish', () => file.close());
+  });
 };

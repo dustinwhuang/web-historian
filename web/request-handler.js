@@ -16,10 +16,11 @@ exports.handleRequest = function (req, res) {
       let url = chunk.toString().match(/url=(.*)/)[1];
       archive.isUrlInList(url, exists => {
         if (exists) {
+          console.log('Archived sites path: ' + archive.paths.archivedSites + ' and url: ' + url);
           http.serveAssets(res, archive.paths.archivedSites + '/' + url);
         } else {
           archive.addUrlToList(url, () => {});
-          archive.downloadUrls([url]);
+          // archive.downloadUrls([url]);
           http.serveAssets(res, './web/public/loading.html');
         }
       });
