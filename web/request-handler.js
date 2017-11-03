@@ -14,18 +14,20 @@ exports.handleRequest = function (req, res) {
   } else if (req.method === 'POST') {
     req.on('data', chunk => {
       let url = chunk.toString().match(/url=(.*)/)[1];
-      archive.isUrlInList(url, exists => {
-        if (exists) {
-          console.log('Archived sites path: ' + archive.paths.archivedSites + ' and url: ' + url);
-          http.serveAssets(res, archive.paths.archivedSites + '/' + url);
-        } else {
-          archive.addUrlToList(url, () => {});
-          // archive.downloadUrls([url]);
-          http.serveAssets(res, './web/public/loading.html');
-        }
-      });
-      res.writeHead(302, headers);
-      res.end();
+      archive.isUrlInListAsync(url)
+        .then(exists => {
+          if (exists) {
+            console.log('Archived sites path: ' + archive.paths.archivedSites + ' and url: ' + url);
+            http.serveAssets(res, archive.paths.archivedSites + '/' + url);
+          } else {
+            archive.addUrlToListAsync(url);
+            http.serveAssets(res, './web/public/loading.html');
+          }
+        })
+        .then(() => {
+          res.writeHead(302, headers);
+          res.end();
+        });
     });
   } else {
     headers['Content-Type'] = 'text/html';

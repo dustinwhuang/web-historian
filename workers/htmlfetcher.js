@@ -2,10 +2,12 @@
 // that are waiting.
 const archive = require('../helpers/archive-helpers');
 
-archive.readListOfUrls(function(arrayOfUrls) {
-  let unarchivedUrls = arrayOfUrls.filter(function(url) {
-    return !archive.isUrlArchived(url, (exists) => exists);
-  });
-
-  archive.downloadUrls(unarchivedUrls);
-});
+archive.readListOfUrlsAsync()
+  .then(urls => urls.slice(0, -1).forEach(url => {
+    archive.isUrlArchivedAsync(url)
+      .then(exists => {
+        if (!exists) {
+          archive.downloadUrl(url);
+        }
+      });
+  }));

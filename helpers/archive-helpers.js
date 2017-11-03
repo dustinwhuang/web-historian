@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 const https = require('https');
+const Promise = require('bluebird');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -44,14 +45,37 @@ exports.isUrlArchived = function(url, callback) {
 };
 
 exports.downloadUrls = function(urls) {
-  urls.forEach(url => this.downloadPage(url));
+  urls.forEach(url => this.downloadUrl(url));
 };
 
-exports.downloadPage = function(url) {
+exports.downloadUrl = function(url) {
+  console.log(url);
   let file = fs.createWriteStream(this.paths.archivedSites + '/' + url);
   https.get('https://' + url, response => {
     response.pipe(file);
 
     file.on('finish', () => file.close());
   });
+};
+
+Promise.promisifyAll(fs);
+
+exports.readListOfUrlsAsync = function() {
+  return fs.readFileAsync(this.paths.list)
+    .then(data => data.toString().split('\n'));
+};
+
+exports.isUrlInListAsync = function(url) {
+  return this.readListOfUrlsAsync()
+    .then(urls => urls.some(e => e === url));
+};
+
+exports.addUrlToListAsync = function(url) {
+  return fs.appendFileAsync(this.paths.list, `${url}\n`);
+};
+
+exports.isUrlArchivedAsync = function(url) {
+  return fs.statAsync(`${this.paths.archivedSites}/${url}`)
+    .then(stats => stats.isFile())
+    .catch(err => false);
 };
