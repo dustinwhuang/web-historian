@@ -61,8 +61,8 @@ exports.downloadUrl = function(url) {
 Promise.promisifyAll(fs);
 
 exports.readListOfUrlsAsync = function() {
-  return fs.readFileAsync(this.paths.list)
-    .then(data => data.toString().split('\n'));
+  return fs.readFileAsync(this.path.list)
+    .then(buffer => buffer.toString().split('\n'));
 };
 
 exports.isUrlInListAsync = function(url) {
